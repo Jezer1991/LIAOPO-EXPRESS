@@ -24,9 +24,9 @@ var server = app.listen(3001, () => {
 });
 
 
-app.get(“/status”, (request, response) => {
+app.get("/status", (request, response) => {
    const status = {
-      “Status”: “Running”
+      "Status": "Running"
    };
    
    response.send(status);
