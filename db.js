@@ -1,11 +1,11 @@
 const mysql = require("mysql2");
 
 const db = mysql.createPool({
-    host: 'roundhouse.proxy.rlwy.net',
-    user: 'root',
-    password: 'dADhfeCdDcEBc2fcEhf5BDggFH2ge3',
-    database: 'railway',
-    port: '17956'
+    host: process.env.DB_HOST ||'roundhouse.proxy.rlwy.net',
+    user: process.env.DB_USER ||'root',
+    password: process.env.DB_PASSWORD ||'dADhfeCdDcEBc2fcEhf5BDggFH2ge3-3',
+    database: process.env.DB_DATABASE ||'railway',
+    port: process.env.DB_PORT ||'17956'
 });
 
 
