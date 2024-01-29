@@ -356,7 +356,7 @@ app.post('/api/login', (req, res) => {
     " u.id AS id_usuario," +
     " u.nombre AS nombre_usuario," +
     " u.password AS password_usuario," +
-    " m.id AS id_menu," +
+    " m.id AS id_menu" +
     " FROM permisos_usuarios pu" +
     " INNER JOIN permisos p on p.id  = pu.id_permiso" +
     " INNER JOIN usuario u on u.id = pu.id_usuario" +
