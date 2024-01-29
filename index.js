@@ -113,7 +113,7 @@ app.get('/api/bloques', (req, res) => {
 })
 
 app.get('/api/temas', (req, res) => {
-    const sql = "SELECT * FROM tema";
+    const sql = "SELECT t.id, t.nombre_corto, t.nombre_largo, b.id as id_bloque, b.nombre as nombre_bloque FROM tema t inner join bloque b on t.id_bloque = b.id";
     db.query(sql, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -285,8 +285,9 @@ app.post('/api/save/test', (req, res) => {
     const nombre = req.body.nombre;
     const bloque = req.body.bloque;
     const tipoTest = req.body.tipoTest;
-    const sql = "INSERT INTO test (nombre, id_bloque, id_tipo_test) VALUES(?,?,?);";
-    db.query(sql, [nombre, bloque, tipoTest], async (err, result) => {
+    const idTema= req.body.id_tema;
+    const sql = "INSERT INTO test (nombre, id_bloque, id_tipo_test, id_tema) VALUES(?,?,?,?);";
+    db.query(sql, [nombre, bloque, tipoTest, idTema], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
     });
