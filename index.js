@@ -144,7 +144,7 @@ app.get('/api/preguntas/:id_test', (req, res) => {
         " a.anho as annho" +
         " FROM pregunta p" +
         " INNER JOIN anho a on p.anho = a.id" +
-        " where id_test = ?";
+        " where id_test = ? order by p.orden";
     db.query(sql2, id, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -176,7 +176,7 @@ app.get('/api/opcion/:id_pregunta', (req, res) => {
 
 app.get('/api/opciones/:id_test', (req, res) => {
     const id = req.params.id_test;
-    const sql = "SELECT o.id as id_opcion, p.*, o.* FROM opcion o INNER JOIN pregunta p on p.id = o.id_pregunta WHERE p.id_test = ?";
+    const sql = "SELECT o.id as id_opcion, p.*, o.* FROM opcion o INNER JOIN pregunta p on p.id = o.id_pregunta WHERE p.id_test = ? order by o.opcion";
     db.query(sql, id, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -240,11 +240,24 @@ app.get('/api/anhos', (req, res) => {
     });
 })
 
+app.post('/api/anho', (req, res) => {
+    const anho = req.body.anho;
+    const sql = "SELECT * FROM anho where anho = ?";
+    db.query(sql, [anho],async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
 
 app.post('/api/save/bloque', (req, res) => {
     const nombre = req.body.nombre;
-    const sql = "INSERT INTO bloque (nombre) VALUES(?);";
-    db.query(sql, nombre, async (err, result) => {
+    const bloque = req.body.bloque;
+    const sql = "INSERT INTO bloque (nombre, bloque) VALUES(?,?);";
+    db.query(sql, [nombre,bloque], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
     });
@@ -258,6 +271,20 @@ app.post('/api/save/tema', (req, res) => {
     db.query(sql, [nombre_corto, nombre_largo, id_bloque], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
+    });
+});
+
+app.post('/api/save/tema2', async(req, res) => {
+    const nombre_corto = req.body.nombre_corto;
+    const nombre_largo = req.body.nombre_largo;
+    const id_bloque = req.body.id_bloque;
+    const sql = "INSERT INTO tema (nombre_corto, nombre_largo, id_bloque) VALUES(?,?,?);";
+    db.query(sql, [nombre_corto, nombre_largo, id_bloque], (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
     });
 });
 
@@ -293,6 +320,21 @@ app.post('/api/save/test', (req, res) => {
     });
 });
 
+app.post('/api/save/test2', async(req, res) => {
+    const nombre = req.body.nombre;
+    const bloque = req.body.id_bloque;
+    const tipoTest = req.body.id_tipo_test;
+    const idTema= req.body.id_tema;
+    const sql = "INSERT INTO test (nombre, id_bloque, id_tipo_test, id_tema) VALUES(?,?,?,?);";
+    db.query(sql, [nombre, bloque, tipoTest, idTema], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+});
+
 
 app.delete('/api/delete/test/:id', (req, res) => {
     const id = req.params.id;
@@ -315,6 +357,21 @@ app.post('/api/save/pregunta', (req, res) => {
     });
 });
 
+app.post('/api/save/pregunta2', async(req, res) => {
+    const nombre = req.body.nombre;
+    const id_test = req.body.id_test;
+    const anho = req.body.anho;
+    const orden = req.body.orden;
+    const sql = "INSERT INTO pregunta (nombre, id_test, anho, orden) VALUES(?,?,?,?);";
+    db.query(sql, [nombre, id_test, anho, orden], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+});
+
 
 app.delete('/api/delete/pregunta/:id', (req, res) => {
     const id = req.params.id;
@@ -334,6 +391,20 @@ app.post('/api/save/opcion', (req, res) => {
     db.query(sql, [opcion, id_pregunta, opcionCorrecta], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
+    });
+});
+
+app.post('/api/save/opcion2', async(req, res) => {
+    const opcion = req.body.opcion;
+    const id_pregunta = req.body.id_pregunta;
+    const opcionCorrecta = req.body.opcionCorrecta;
+    const sql = "INSERT INTO opcion (opcion, id_pregunta, opcionCorrecta) VALUES(?,?,?);";
+    db.query(sql, [opcion, id_pregunta, opcionCorrecta], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
     });
 });
 
