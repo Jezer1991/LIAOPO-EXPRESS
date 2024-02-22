@@ -102,7 +102,29 @@ app.get('/api/test/:id_test', async (req, res) => {
 })
 
 app.get('/api/bloques', (req, res) => {
+    const sql = "SELECT * FROM bloque where esExamen = 0";
+    db.query(sql, async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.get('/api/allBloques', (req, res) => {
     const sql = "SELECT * FROM bloque";
+    db.query(sql, async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.get('/api/examenes', (req, res) => {
+    const sql = "SELECT * FROM bloque where esExamen = 1";
     db.query(sql, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -141,7 +163,9 @@ app.get('/api/preguntas/:id_test', (req, res) => {
     const sql2 = "SELECT" +
         " p.id, p.nombre," +
         " p.id_test, p.anho," +
-        " a.anho as annho" +
+        " a.anho as annho," +
+        " p.esReserva as esReserva," +
+        " p.anulada as anulada" +
         " FROM pregunta p" +
         " INNER JOIN anho a on p.anho = a.id" +
         " where id_test = ? order by p.orden";
@@ -256,8 +280,9 @@ app.post('/api/anho', (req, res) => {
 app.post('/api/save/bloque', (req, res) => {
     const nombre = req.body.nombre;
     const bloque = req.body.bloque;
-    const sql = "INSERT INTO bloque (nombre, bloque) VALUES(?,?);";
-    db.query(sql, [nombre,bloque], async (err, result) => {
+    const esExamen = req.body.esExamen;
+    const sql = "INSERT INTO bloque (nombre, bloque, esExamen) VALUES(?,?,?);";
+    db.query(sql, [nombre,bloque,esExamen], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
     });
@@ -350,8 +375,11 @@ app.post('/api/save/pregunta', (req, res) => {
     const nombre = req.body.nombre;
     const id_test = req.body.id_test;
     const anho = req.body.anho;
-    const sql = "INSERT INTO pregunta (nombre, id_test, anho) VALUES(?,?,?);";
-    db.query(sql, [nombre, id_test, anho], async (err, result) => {
+    const orden = req.body.orden;
+    const anulada = req.body.anulada;
+    const esReserva = req.body.esReserva;
+    const sql = "INSERT INTO pregunta (nombre, id_test, anho,orden,anulada,esReserva) VALUES(?,?,?,?,?,?);";
+    db.query(sql, [nombre, id_test, anho, orden,anulada, esReserva], async (err, result) => {
         if (!err) return res.redirect(req.body.prevPage);
         res.send(err);
     });
