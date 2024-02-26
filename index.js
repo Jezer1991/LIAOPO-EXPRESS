@@ -36,7 +36,8 @@ app.get('/api/tests', (req, res) => {
         " tt.nombre as nombre_tipo_test," +
         " b.nombre as nombre_bloque," +
         " te.nombre_corto as nombre_corto_tema," +
-        " te.nombre_largo as nombre_largo_tema" +
+        " te.nombre_largo as nombre_largo_tema," +
+        " t.tieneSubtemas as tieneSubtemas" +
         " FROM test t" +
         " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
         " INNER JOIN bloque b on b.id = t.id_bloque" +
@@ -61,12 +62,13 @@ app.get('/api/tests/:id_bloque', async (req, res) => {
         " tt.nombre as nombre_tipo_test," +
         " b.nombre as nombre_bloque," +
         " te.nombre_corto as nombre_corto_tema," +
-        " te.nombre_largo as nombre_largo_tema" +
+        " te.nombre_largo as nombre_largo_tema," +
+        " t.tieneSubtemas as tieneSubtemas" +
         " FROM test t" +
         " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
         " INNER JOIN bloque b on b.id = t.id_bloque" +
         " INNER JOIN tema te on te.id = t.id_tema" +
-        " WHERE t.id_bloque = ?";
+        " WHERE t.id_bloque = ? order by t.id";
     db.query(sql, id, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -86,11 +88,16 @@ app.get('/api/test/:id_test', async (req, res) => {
         " t.id_tipo_test," +
         " tt.nombre as nombre_tipo_test," +
         " te.nombre_corto as nombre_corto_tema," +
-        " te.nombre_largo as nombre_largo_tema" +
+        " te.nombre_largo as nombre_largo_tema," +
+        " te.id as id_tema," +
+        " t.tieneSubtemas as tieneSubtemas," +
+        " t.tieneSupuesto as tieneSupuesto," +
+        " s.supuesto as supuesto" +
         " FROM test t" +
         " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
         " INNER JOIN bloque b on b.id = t.id_bloque" +
         " INNER JOIN tema te on te.id = t.id_tema" +
+        " LEFT join supuesto s on s.id_test = t.id"+
         " WHERE t.id = ?";
     db.query(sql, id, async (err, result) => {
         if (err === null) {
@@ -470,6 +477,43 @@ app.post('/api/login', (req, res) => {
         }
     });
 });
+
+app.post('/api/save/compuesto', (req, res) => {
+    const id_padre = req.body.id_padre;
+    const id_hijo = req.body.id_hijo;
+    const orden = req.body.orden;
+    const sql = "INSERT INTO compuesto (id_padre, id_hijo,orden) VALUES(?,?,?);";
+    db.query(sql, [id_padre,id_hijo, orden], async (err, result) => {
+        if (!err) return res.redirect(req.body.prevPage);
+        res.send(err);
+    });
+});
+
+
+app.get('/api/compuestos/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM compuesto c inner join test t on c.id_hijo = t.id  left join supuesto s on s.id_test  = c.id_hijo where c.id_padre = ? order by c.orden asc";
+    db.query(sql,id,async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+
+app.get('/api/supuesto/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM supuesto where id_test = ?";
+    db.query(sql,id,async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
 
 app.listen(PORT, () => {
     console.log(`Server corriendo en ${PORT}`);
