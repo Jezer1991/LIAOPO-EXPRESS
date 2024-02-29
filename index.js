@@ -41,7 +41,31 @@ app.get('/api/tests', (req, res) => {
         " FROM test t" +
         " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
         " INNER JOIN bloque b on b.id = t.id_bloque" +
-        " INNER JOIN tema te on te.id = t.id_tema";
+        " INNER JOIN tema te on te.id = t.id_tema WHERE t.visible = 1";
+    db.query(sql, async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.get('/api/allTests', (req, res) => {
+    const sql = "SELECT " +
+        " t.id as id_test," +
+        " t.nombre as nombre_test," +
+        " t.id_bloque," +
+        " t.id_tipo_test," +
+        " tt.nombre as nombre_tipo_test," +
+        " b.nombre as nombre_bloque," +
+        " te.nombre_corto as nombre_corto_tema," +
+        " te.nombre_largo as nombre_largo_tema," +
+        " t.tieneSubtemas as tieneSubtemas" +
+        " FROM test t" +
+        " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
+        " INNER JOIN bloque b on b.id = t.id_bloque" +
+        " INNER JOIN tema te on te.id = t.id_tema WHERE t.visible = 1";
     db.query(sql, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -63,7 +87,35 @@ app.get('/api/tests/:id_bloque', async (req, res) => {
         " b.nombre as nombre_bloque," +
         " te.nombre_corto as nombre_corto_tema," +
         " te.nombre_largo as nombre_largo_tema," +
-        " t.tieneSubtemas as tieneSubtemas" +
+        " t.tieneSubtemas as tieneSubtemas," +
+        " t.visible as visible"+
+        " FROM test t" +
+        " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
+        " INNER JOIN bloque b on b.id = t.id_bloque" +
+        " INNER JOIN tema te on te.id = t.id_tema" +
+        " WHERE t.id_bloque = ? AND t.visible = 1 order by t.id ";
+    db.query(sql, id, async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.get('/api/allTests/:id_bloque', async (req, res) => {
+    const id = req.params.id_bloque;
+    const sql = "SELECT " +
+        " t.id as id_test," +
+        " t.nombre as nombre_test," +
+        " t.id_bloque," +
+        " t.id_tipo_test," +
+        " tt.nombre as nombre_tipo_test," +
+        " b.nombre as nombre_bloque," +
+        " te.nombre_corto as nombre_corto_tema," +
+        " te.nombre_largo as nombre_largo_tema," +
+        " t.tieneSubtemas as tieneSubtemas," +
+        " t.visible as visible"+
         " FROM test t" +
         " INNER JOIN tipo_test tt on t.id_tipo_test = tt.id" +
         " INNER JOIN bloque b on b.id = t.id_bloque" +
@@ -77,6 +129,47 @@ app.get('/api/tests/:id_bloque', async (req, res) => {
         }
     });
 })
+
+app.post('/api/visibility', async(req,res)=>{
+    const visible = req.body.visible;
+    const id = req.body.id;
+    const sql = "UPDATE test SET visible = ? where id = ?";
+    db.query(sql, [visible,id], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.post('/api/enabled/subtemas', async(req,res)=>{
+    const enabled = req.body.enabled;
+    const id = req.body.id;
+    const sql = "UPDATE test SET tieneSubtemas = ? where id = ?";
+    db.query(sql, [enabled,id], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
+app.post('/api/update/pregunta', async(req,res)=>{
+    const value = req.body.value;
+    const id = req.body.id;
+    const col = req.body.col;
+    const sql = "UPDATE pregunta SET "+col+" = ? where id = ?";
+    db.query(sql, [value,id], async (err, result) => {
+        if (err === null) {
+            res.send({ code: 201, result });
+        } else {
+            res.send({ code: 202, err });
+        }
+    });
+})
+
 
 app.get('/api/test/:id_test', async (req, res) => {
     const id = req.params.id_test;
@@ -120,7 +213,7 @@ app.get('/api/bloques', (req, res) => {
 })
 
 app.get('/api/allBloques', (req, res) => {
-    const sql = "SELECT * FROM bloque";
+    const sql = "SELECT * FROM bloque ";
     db.query(sql, async (err, result) => {
         if (err === null) {
             res.send({ code: 201, result });
@@ -172,7 +265,8 @@ app.get('/api/preguntas/:id_test', (req, res) => {
         " p.id_test, p.anho," +
         " a.anho as annho," +
         " p.esReserva as esReserva," +
-        " p.anulada as anulada" +
+        " p.anulada as anulada," +
+        " p.orden as orden" +
         " FROM pregunta p" +
         " INNER JOIN anho a on p.anho = a.id" +
         " where id_test = ? order by p.orden";
